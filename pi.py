@@ -8,8 +8,9 @@ pygame.camera.init()
 screen = pygame.display.set_mode((640, 480), 0)
 
 cam_list = pygame.camera.list_cameras()
+print(cam_list)
 
-webcam = pygame.Camera(cam_list[0], (32, 24))
+webcam = pygame.camera.Camera(cam_list[0], (640, 480))
 webcam.start()
 
 while True:
