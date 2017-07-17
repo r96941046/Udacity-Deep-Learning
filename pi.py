@@ -36,60 +36,59 @@ capture_rect = pygame.draw.rect(screen, (49, 154, 234), (180, 550, 100, 30))
 screen.blit(quit_text, (55, 555))
 screen.blit(capture_text, (182, 555))
 
-graph = tf.Graph()
-
 pygame.display.flip()
 
-while True:
+graph = tf.Graph()
 
-    try:
-        image = pygame.image.load(FILENAME)
-        image = pygame.transform.scale(image, (640, 480))
-    except:
-        print('Image IO error')
+with graph.as_default(), tf.Session(graph=graph) as session:
 
-    screen.blit(image, (0, 0))
-    pygame.display.update()
+    loader = tf.train.import_meta_graph('svhn.meta')
+    loader.restore(session, tf.train.latest_checkpoint('./'))
 
-    pos = pygame.mouse.get_pos()
-    pressed_l, pressed_m, pressed_r = pygame.mouse.get_pressed()
+    tf_data = graph.get_tensor_by_name('data:0')
+    keep_prob = graph.get_tensor_by_name('keep_prob:0')
+    prediction = graph.get_tensor_by_name('prediction:0')
 
-    if capture_rect.collidepoint(pos) and pressed_l:
+    while True:
 
-        print('Analyzing...')
-        
-        src_file = os.path.join(CWD, FILENAME)
-        dst_file = os.path.join(CWD, CAPTUREDFILENAME)
-        shutil.copyfile(src_file, dst_file)
-        captured = pygame.image.load(dst_file)
-        captured = pygame.transform.scale(captured, (64, 64))
+        try:
+            image = pygame.image.load(FILENAME)
+            image = pygame.transform.scale(image, (640, 480))
+        except:
+            print('Image IO error')
 
-        screen.blit(captured, (400, 500))
+        screen.blit(image, (0, 0))
         pygame.display.update()
 
-        image_file = ndimage.imread(dst_file).astype(np.float32)
-        grey = np.dot(image_file, [0.299, 0.587, 0.114])
-        resized = imresize(grey, (IMAGE_SIZE, IMAGE_SIZE))
-        normalized = (resized - PIXEL_DEPTH / 2) / PIXEL_DEPTH
-        normalized = normalized.reshape((IMAGE_SIZE, IMAGE_SIZE, 1))
+        pos = pygame.mouse.get_pos()
+        pressed_l, pressed_m, pressed_r = pygame.mouse.get_pressed()
 
-        data = np.zeros((1, IMAGE_SIZE, IMAGE_SIZE, 1), dtype=np.float32)
-        data[0] = normalized
+        if capture_rect.collidepoint(pos) and pressed_l:
 
-        with graph.as_default(), tf.Session(graph=graph) as session:
+            print('Analyzing...')
 
-            loader = tf.train.import_meta_graph('svhn.meta')
-            loader.restore(session, tf.train.latest_checkpoint('./'))
+            src_file = os.path.join(CWD, FILENAME)
+            dst_file = os.path.join(CWD, CAPTUREDFILENAME)
+            shutil.copyfile(src_file, dst_file)
+            captured = pygame.image.load(dst_file)
+            captured = pygame.transform.scale(captured, (64, 64))
 
-            tf_data = graph.get_tensor_by_name('data:0')
-            keep_prob = graph.get_tensor_by_name('keep_prob:0')
-            prediction = graph.get_tensor_by_name('prediction:0')
+            screen.blit(captured, (400, 500))
+            pygame.display.update()
+
+            image_file = ndimage.imread(dst_file).astype(np.float32)
+            grey = np.dot(image_file, [0.299, 0.587, 0.114])
+            resized = imresize(grey, (IMAGE_SIZE, IMAGE_SIZE))
+            normalized = (resized - PIXEL_DEPTH / 2) / PIXEL_DEPTH
+            normalized = normalized.reshape((IMAGE_SIZE, IMAGE_SIZE, 1))
+
+            data = np.zeros((1, IMAGE_SIZE, IMAGE_SIZE, 1), dtype=np.float32)
+            data[0] = normalized
 
             feed_dict = {
                 tf_data: data,
                 keep_prob: 1.0
             }
-            
             p = prediction.eval(feed_dict)
 
             digitized = np.split(np.argmax(p, axis=1), MAX_DIGITS)
@@ -106,13 +105,13 @@ while True:
             result_text = font.render('Result: ' + result, False, (255, 255, 255))
             screen.blit(result_text, (400, 580))
 
-    if quit_rect.collidepoint(pos) and pressed_l:
-        pygame.quit()
-        process.kill()
-        sys.exit()
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if quit_rect.collidepoint(pos) and pressed_l:
             pygame.quit()
             process.kill()
             sys.exit()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                process.kill()
+                sys.exit()
