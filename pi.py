@@ -11,7 +11,7 @@ from subprocess import Popen
 
 FILENAME = 'webcam.jpg'
 CAPTUREDFILENAME = 'captured.jpg'
-COMMAND = ['fswebcam', '--device', '/dev/video0', FILENAME, '--loop', '0.1']
+COMMAND = ['fswebcam', '--no-banner', '--device', '/dev/video0', FILENAME, '--loop', '1']
 CWD = os.getcwd()
 
 PIXEL_DEPTH = 255.0
@@ -30,8 +30,8 @@ pygame.display.flip()
 
 while True:
 
-    image = pygame.image.load(FILENAME)
     try:
+        image = pygame.image.load(FILENAME)
         image = pygame.transform.scale(image, (640, 480))
     except:
         print('Image IO error')
@@ -44,6 +44,9 @@ while True:
     pressed_l, pressed_m, pressed_r = pygame.mouse.get_pressed()
 
     if capture_rect.collidepoint(pos) and pressed_l:
+
+        print('Analyzing...')
+        
         src_file = os.path.join(CWD, FILENAME)
         dst_file = os.path.join(CWD, CAPTUREDFILENAME)
         shutil.copyfile(src_file, dst_file)
@@ -59,8 +62,8 @@ while True:
         normalized = (resized - PIXEL_DEPTH / 2) / PIXEL_DEPTH
         normalized = normalized.reshape((IMAGE_SIZE, IMAGE_SIZE, 1))
 
-        tf_data = np.zeros((1, IMAGE_SIZE, IMAGE_SIZE, 1), dtype=np.float32)
-        tf_data[0] = normalized
+        data = np.zeros((1, IMAGE_SIZE, IMAGE_SIZE, 1), dtype=np.float32)
+        data[0] = normalized
 
         graph = tf.get_default_graph()
 
@@ -74,17 +77,16 @@ while True:
             prediction = graph.get_tensor_by_name('prediction:0')
 
             feed_dict = {
-                tf_data: tf_data,
+                tf_data: data,
                 keep_prob: 1.0
             }
 
             p = prediction.eval(feed_dict)
-            print(p)
 
             digitized = np.split(np.argmax(p, axis=1), MAX_DIGITS)
             digits = []
 
-            for digit in digitized:
+            for [digit] in digitized:
                 if digit == 10:
                     digit = ''
                 digits.append(str(digit))
