@@ -36,6 +36,8 @@ capture_rect = pygame.draw.rect(screen, (49, 154, 234), (180, 550, 100, 30))
 screen.blit(quit_text, (55, 555))
 screen.blit(capture_text, (182, 555))
 
+graph = tf.Graph()
+
 pygame.display.flip()
 
 while True:
@@ -63,6 +65,7 @@ while True:
         captured = pygame.transform.scale(captured, (64, 64))
 
         screen.blit(captured, (400, 500))
+        pygame.display.update()
 
         image_file = ndimage.imread(dst_file).astype(np.float32)
         grey = np.dot(image_file, [0.299, 0.587, 0.114])
@@ -73,9 +76,7 @@ while True:
         data = np.zeros((1, IMAGE_SIZE, IMAGE_SIZE, 1), dtype=np.float32)
         data[0] = normalized
 
-        graph = tf.get_default_graph()
-
-        with tf.Session(graph=graph) as session:
+        with graph.as_default(), tf.Session(graph=graph) as session:
 
             loader = tf.train.import_meta_graph('svhn.meta')
             loader.restore(session, tf.train.latest_checkpoint('./'))
@@ -88,7 +89,7 @@ while True:
                 tf_data: data,
                 keep_prob: 1.0
             }
-
+            
             p = prediction.eval(feed_dict)
 
             digitized = np.split(np.argmax(p, axis=1), MAX_DIGITS)
