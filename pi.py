@@ -74,6 +74,9 @@ with graph.as_default(), tf.Session(graph=graph) as session:
             captured = pygame.transform.scale(captured, (64, 64))
 
             screen.blit(captured, (400, 500))
+            screen.fill(pygame.Color('black'), (400, 580, 200, 69))
+            hint_text = font.render('Analyzing...', False, (255, 255, 255))
+            screen.blit(hint_text, (400, 580))
             pygame.display.update()
 
             image_file = ndimage.imread(dst_file).astype(np.float32)
@@ -101,6 +104,8 @@ with graph.as_default(), tf.Session(graph=graph) as session:
 
             result = ''.join(digits)
             print('Result: %s' % result)
+
+            screen.fill(pygame.Color('black'), (400, 580, 200, 69))
 
             result_text = font.render('Result: ' + result, False, (255, 255, 255))
             screen.blit(result_text, (400, 580))
