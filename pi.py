@@ -11,7 +11,7 @@ from subprocess import Popen
 
 FILENAME = 'webcam.jpg'
 CAPTUREDFILENAME = 'captured.jpg'
-COMMAND = ['fswebcam', '--no-banner', '--device', '/dev/video0', FILENAME, '--loop', '1']
+COMMAND = ['fswebcam', '--no-banner', '--device', '/dev/video0', FILENAME, '--loop', '1', '--set', 'brightness=100%']
 CWD = os.getcwd()
 
 PIXEL_DEPTH = 255.0
@@ -20,12 +20,22 @@ MAX_DIGITS = 5
 
 pygame.init()
 
+pygame.font.init()
+font = pygame.font.SysFont('Comic Sans MS', 30)
+
+quit_text = font.render('QUIT', False, (255, 255, 255))
+capture_text = font.render('ANALYZE', False, (255, 255, 255))
+
 process = Popen(COMMAND, shell=False)
 
 screen = pygame.display.set_mode((640, 640), 0)
 
-quit_rect = pygame.draw.rect(screen, (255, 0, 0), (0, 480, 100, 80))
-capture_rect = pygame.draw.rect(screen, (128, 0, 0), (100, 480, 100, 80))
+quit_rect = pygame.draw.rect(screen, (49, 154, 234), (30, 550, 100, 30))
+capture_rect = pygame.draw.rect(screen, (49, 154, 234), (180, 550, 100, 30))
+
+screen.blit(quit_text, (55, 555))
+screen.blit(capture_text, (182, 555))
+
 pygame.display.flip()
 
 while True:
@@ -37,7 +47,6 @@ while True:
         print('Image IO error')
 
     screen.blit(image, (0, 0))
-
     pygame.display.update()
 
     pos = pygame.mouse.get_pos()
@@ -50,11 +59,10 @@ while True:
         src_file = os.path.join(CWD, FILENAME)
         dst_file = os.path.join(CWD, CAPTUREDFILENAME)
         shutil.copyfile(src_file, dst_file)
-
         captured = pygame.image.load(dst_file)
         captured = pygame.transform.scale(captured, (64, 64))
 
-        screen.blit(captured, (200, 480))
+        screen.blit(captured, (400, 500))
 
         image_file = ndimage.imread(dst_file).astype(np.float32)
         grey = np.dot(image_file, [0.299, 0.587, 0.114])
@@ -93,6 +101,9 @@ while True:
 
             result = ''.join(digits)
             print('Result: %s' % result)
+
+            result_text = font.render('Result: ' + result, False, (255, 255, 255))
+            screen.blit(result_text, (400, 580))
 
     if quit_rect.collidepoint(pos) and pressed_l:
         pygame.quit()
