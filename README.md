@@ -9,7 +9,7 @@
     - Webcam
     - Google Map Street View
 - [Model Training / Exporting](https://github.com/r96941046/Udacity-Deep-Learning/blob/master/Final%20Assignment%20Identify%20Multiple%20Digits.ipynb)
-- [Model structure](https://github.com/r96941046/Udacity-Deep-Learning/blob/master/model.png)
+- ![Model structure](https://github.com/r96941046/Udacity-Deep-Learning/blob/master/model.png)
 - [Model Importing / Demo Code](https://github.com/r96941046/Udacity-Deep-Learning/blob/master/pi.py)
 
 ### Other Assignment Notebook Files
