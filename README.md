@@ -3,6 +3,8 @@
 ### Multiple Digit Recognition
 
 - [Project Description](https://classroom.udacity.com/courses/ud730/lessons/224c71d3-9dc3-4cb5-abca-f8d12fce5cfa/concepts/f4215f02-b293-476c-97fa-c1e6ed83979b)
+- Model build / train with [MNIST Synthetic Dataset](http://yann.lecun.com/exdb/mnist/) and [SVHN Dataset](http://ufldl.stanford.edu/housenumbers/)
+- 85.7% Accuracy with SVHN test dataset
 - Demo done with:
     - Raspberry Pi Model 3
     - PyGame
